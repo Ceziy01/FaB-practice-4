@@ -59,21 +59,66 @@ const options = {
       schemas: {
         Product: {
           type: "object",
+          required: ["id", "name", "category", "description"],
+          properties: {
+            id: {
+              type: "string",
+              example: "abc123"
+            },
+            name: {
+              type: "string",
+              example: "The Witcher 3"
+            },
+            category: {
+              type: "string",
+              example: "RPG"
+            },
+            description: {
+              type: "string",
+              example: "Открытый мир, фэнтези"
+            },
+            price: {
+              type: "number",
+              example: 1999
+            },
+            stock: {
+              type: "number",
+              example: 10
+            },
+            rating: {
+              type: "number",
+              example: 4.8
+            }
+          }
+        },
+      
+        ProductInput: {
+          type: "object",
           required: ["name", "category", "description"],
           properties: {
-            id: { type: "string", example: "abc123" },
-            name: { type: "string", example: "The Witcher 3" },
-            category: { type: "string", example: "RPG" },
-            description: { type: "string", example: "Открытый мир, фэнтези" },
-            price: { type: "number", example: 1999 },
-            stock: { type: "number", example: 10 },
-            rating: { type: "number", example: 4.8 }
+            name: { type: "string" },
+            category: { type: "string" },
+            description: { type: "string" },
+            price: { type: "number" },
+            stock: { type: "number" },
+            rating: { type: "number" },
+            image: { type: "string" }
+          }
+        },
+      
+        ErrorResponse: {
+          type: "object",
+          properties: {
+            error: {
+              type: "string",
+              example: "Not found"
+            }
           }
         }
       }
     }
   },
-  apis: ["./*.js"]
+  apis: ["./app.js"]
 };
 
 const swaggerSpec = swaggerJsdoc(options);
@@ -83,10 +128,17 @@ app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
  * @swagger
  * /api/products:
  *   get:
- *     summary: Получить список товаров
+ *     summary: Получить список всех товаров
+ *     tags: [Products]
  *     responses:
  *       200:
- *         description: Список товаров
+ *         description: Список товаров успешно получен
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/Product'
  */
 app.get("/api/products", (req, res) => {
   res.json(products);
@@ -97,17 +149,27 @@ app.get("/api/products", (req, res) => {
  * /api/products/{id}:
  *   get:
  *     summary: Получить товар по ID
+ *     tags: [Products]
  *     parameters:
  *       - in: path
  *         name: id
  *         required: true
+ *         description: ID товара
  *         schema:
  *           type: string
  *     responses:
  *       200:
- *         description: Найденный товар
+ *         description: Товар найден
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Product'
  *       404:
- *         description: Не найден
+ *         description: Товар не найден
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
  */
 app.get("/api/products/:id", (req, res) => {
   const product = findProduct(req.params.id);
@@ -120,17 +182,27 @@ app.get("/api/products/:id", (req, res) => {
  * /api/products:
  *   post:
  *     summary: Создать новый товар
+ *     tags: [Products]
  *     requestBody:
  *       required: true
+ *       description: Данные нового товара
  *       content:
  *         application/json:
  *           schema:
- *             $ref: '#/components/schemas/Product'
+ *             $ref: '#/components/schemas/ProductInput'
  *     responses:
  *       201:
- *         description: Товар создан
+ *         description: Товар успешно создан
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Product'
  *       400:
- *         description: Ошибка данных
+ *         description: Некорректные данные
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
  */
 app.post("/api/products", (req, res) => {
   const { name, category, description, price, stock, rating, image } = req.body;
@@ -158,18 +230,35 @@ app.post("/api/products", (req, res) => {
  * @swagger
  * /api/products/{id}:
  *   patch:
- *     summary: Обновить товар
+ *     summary: Обновить существующий товар
+ *     tags: [Products]
  *     parameters:
  *       - in: path
  *         name: id
  *         required: true
+ *         description: ID товара
  *         schema:
  *           type: string
+ *     requestBody:
+ *       required: true
+ *       description: Поля для обновления
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/ProductInput'
  *     responses:
  *       200:
- *         description: Обновленный товар
+ *         description: Товар успешно обновлен
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Product'
  *       404:
- *         description: Не найден
+ *         description: Товар не найден
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
  */
 app.patch("/api/products/:id", (req, res) => {
   const product = findProduct(req.params.id);
@@ -183,16 +272,24 @@ app.patch("/api/products/:id", (req, res) => {
  * @swagger
  * /api/products/{id}:
  *   delete:
- *     summary: Удалить товар
+ *     summary: Удалить товар по ID
+ *     tags: [Products]
  *     parameters:
  *       - in: path
  *         name: id
  *         required: true
+ *         description: ID товара
  *         schema:
  *           type: string
  *     responses:
  *       204:
- *         description: Удалено
+ *         description: Товар успешно удалён
+ *       404:
+ *         description: Товар не найден
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
  */
 app.delete("/api/products/:id", (req, res) => {
   products = products.filter(p => p.id !== req.params.id);
