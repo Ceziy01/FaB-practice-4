@@ -27,8 +27,7 @@ let products = [
     description: "Открытый мир, фэнтези",
     price: 1999,
     stock: 10,
-    rating: 4.82,
-    image: "https://via.placeholder.com/150"
+    rating: 4.82
   },
   {
     id: nanoid(6),
@@ -37,8 +36,7 @@ let products = [
     description: "Кооперативный шутер",
     price: 1799,
     stock: 26,
-    rating: 4.9,
-    image: "https://via.placeholder.com/150"
+    rating: 4.9
   }
 ];
 
@@ -69,8 +67,7 @@ const options = {
             description: { type: "string", example: "Открытый мир, фэнтези" },
             price: { type: "number", example: 1999 },
             stock: { type: "number", example: 10 },
-            rating: { type: "number", example: 4.8 },
-            image: { type: "string", example: "https://via.placeholder.com/150" }
+            rating: { type: "number", example: 4.8 }
           }
         }
       }
